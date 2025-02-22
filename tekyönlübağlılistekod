@@ -2,61 +2,70 @@
 #include <stdlib.h>
 #include <string.h>
 
-// günlük kaydın yapısı
+// Günlük kaydı için yapı tanımı (Linked List Node)
 typedef struct GunlukKaydi {
-    char mesaj[500];
-    struct GunlukKaydi* sonraki;
+    char mesaj[500]; // Günlük mesajı (en fazla 500 karakter)
+    struct GunlukKaydi* sonraki; // Bir sonraki kaydın adresi
 } GunlukKaydi;
 
-// yeni günlük giriş oluşturma
+// Yeni bir günlük kaydı oluşturur ve döndürür
 GunlukKaydi* yeniKayit(const char* mesaj) {
-    GunlukKaydi* kayit = malloc(sizeof(GunlukKaydi));
-    if (kayit) {
-        strncpy(kayit->mesaj, mesaj, sizeof(kayit->mesaj));
-        kayit->sonraki = NULL;
+    GunlukKaydi* kayit = (GunlukKaydi*)malloc(sizeof(GunlukKaydi)); // Bellekten yer ayır
+    if (kayit) { // Bellek başarıyla ayrıldı mı kontrol et
+        strncpy(kayit->mesaj, mesaj, sizeof(kayit->mesaj) - 1); // Mesajı kopyala
+        kayit->mesaj[sizeof(kayit->mesaj) - 1] = '\0'; // Güvenlik için sonuna null karakter ekle
+        kayit->sonraki = NULL; // Yeni kaydın sonraki işaretçisini NULL yap
     }
-    return kayit;
+    return kayit; // Yeni kaydı döndür
 }
 
-// Günlük girişini ekleme
+// Günlük girişini listeye ekler
 void ekle(GunlukKaydi** bas, const char* mesaj) {
-    GunlukKaydi* kayit = yeniKayit(mesaj);
-    if (*bas == NULL) {
-        *bas = kayit;
+    GunlukKaydi* kayit = yeniKayit(mesaj); // Yeni kayıt oluştur
+    if (!kayit) { // Bellek ayrıldı mı kontrol et
+        printf("Bellek tahsis hatası!\n");
+        return;
+    }
+
+    if (*bas == NULL) { // Eğer liste boşsa
+        *bas = kayit; // Yeni kayıt baş olarak atanır
     } else {
         GunlukKaydi* mevcut = *bas;
-        while (mevcut->sonraki) {
+        while (mevcut->sonraki) { // Listenin sonuna kadar ilerle
             mevcut = mevcut->sonraki;
         }
-        mevcut->sonraki = kayit;
+        mevcut->sonraki = kayit; // Yeni kaydı sona ekle
     }
 }
 
-// günlük girişleri yazdırma
+// Günlük girişlerini ekrana yazdırır
 void yazdir(GunlukKaydi* bas) {
     GunlukKaydi* mevcut = bas;
     while (mevcut) {
-        printf("%s\n", mevcut->mesaj);
-        mevcut = mevcut->sonraki;
+        printf("%s\n", mevcut->mesaj); // Günlük mesajını yazdır
+        mevcut = mevcut->sonraki; // Sonraki kayda geç
     }
 }
 
-
+// Programın ana fonksiyonu
 int main() {
-    GunlukKaydi* gunlukListesi = NULL;
+    GunlukKaydi* gunlukListesi = NULL; // Boş bir günlük listesi başlat
 
+    // Örnek günlük girişleri ekle
     ekle(&gunlukListesi, "2025-02-21 10:00:00: Sistem başlatıldı.");
     ekle(&gunlukListesi, "2025-02-21 10:05:00: Kullanıcı giriş yaptı.");
     ekle(&gunlukListesi, "2025-02-21 10:10:00: Hata: Disk dolu.");
 
+    // Günlük kayıtlarını ekrana yazdır
     yazdir(gunlukListesi);
 
-    // bellek temizleme
+    // Bellek temizleme (Linked List'in tamamını serbest bırak)
     while (gunlukListesi) {
-        GunlukKaydi* sonraki = gunlukListesi->sonraki;
-        free(gunlukListesi);
-        gunlukListesi = sonraki;
+        GunlukKaydi* sonraki = gunlukListesi->sonraki; // Sonraki kaydı sakla
+        free(gunlukListesi); // Mevcut kaydı serbest bırak
+        gunlukListesi = sonraki; // Listenin başını güncelle
     }
 
     return 0;
 }
+
